@@ -24,8 +24,7 @@ class Converter:
         ['>', 'i', '~', '-'],
         ['±', 'k'],
         ['&', 'W', '§'],
-        ['@']
-    ]
+        ['@']]
 
     def __init__(
             self,
@@ -45,6 +44,9 @@ class Converter:
             self,
             pixel: Pixel,
             invert: bool = False) -> str:
+        """
+        Use pixel brightness to choose ascii character
+        """
         brightness = pixel.brightness if not invert else (1 - pixel.brightness)
         tier = round(brightness * (
             len(type(self).ASCII_TIERS_BY_BRIGHTNESS) - 1))
@@ -55,27 +57,32 @@ class Converter:
             pixels: typing.Sequence[Pixel],
             target_x: int,
             target_y: int) -> Pixel:
-        count = 0
-        r = 0
-        g = 0
-        b = 0
+        """
+        Create average of pixels near point in original image
+        """
         orig_x = target_x * self.downsample_factor_x
         orig_y = target_y * self.downsample_factor_y
 
-        # determine average r, g, and b values for pixels in area
+        pixels_in_area: typing.MutableSequence[Pixel] = []
         for x_step in range(self.downsample_factor_x):
             for y_step in range(self.downsample_factor_y):
                 offset = x_step + y_step
                 pos = orig_y * self.image_width + orig_x + offset
                 assert pos < len(pixels)
-                pixel = pixels[pos]
-                r = (r * count + pixel.r) / (count + 1)
-                g = (g * count + pixel.g) / (count + 1)
-                b = (b * count + pixel.b) / (count + 1)
-                count += 1
-        return Pixel(r, g, b)
+                pixels_in_area.append(pixels[pos])
+
+        return Pixel(
+            r=round(
+                sum([p.r for p in pixels_in_area]) / len(pixels_in_area)),
+            g=round(
+                sum([p.g for p in pixels_in_area]) / len(pixels_in_area)),
+            b=round(
+                sum([p.b for p in pixels_in_area]) / len(pixels_in_area)))
 
     def downsample(self) -> typing.Sequence[Pixel]:
+        """
+        Resize image
+        """
         image_data = list(self.image.getdata())
         pixels = [
             Pixel(r=datum[0], g=datum[1], b=datum[2])
@@ -90,12 +97,19 @@ class Converter:
     def convert_image_to_ascii(
             self,
             invert: bool = False) -> typing.Sequence[str]:
+        """
+        Resize image and return list of characters corresponding
+        to brightness of each pixel
+        """
         downsampled = self.downsample()
         return [
             self.get_ascii_for_pixel(pixel, invert=invert)
             for pixel in downsampled]
 
     def print(self, chars: typing.Sequence[str]):
+        """
+        Print characters as lines
+        """
         for y in range(self.target_height):
             row = []
             for x in range(self.target_width):
