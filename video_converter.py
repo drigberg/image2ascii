@@ -1,0 +1,64 @@
+import os
+import random
+import typing
+
+import numpy as np
+
+
+class FrameConverter:
+    ASCII_TIERS_BY_BRIGHTNESS = [
+        ['.', '`', ','],
+        [':', '^'],
+        ['>', 'i', '~', '-'],
+        ['±', 'k'],
+        ['&', 'W', '§'],
+        ['@']]
+
+    def __init__(
+            self,
+            downsample_factor: int):
+        self.downsample_factor_y = downsample_factor
+        self.downsample_factor_x = round(downsample_factor / 2)
+
+    def get_ascii_for_pixel(
+            self,
+            pixel: typing.Tuple[int, int, int],
+            invert: bool = False) -> str:
+        """
+        Use pixel brightness to choose ascii character
+        """
+        brightness = (pixel[0] / 256 + pixel[1] / 256 + pixel[2] / 256) / 3
+        if invert:
+            brightness = 1 - brightness
+        tier = int(round(brightness * (
+            len(type(self).ASCII_TIERS_BY_BRIGHTNESS) - 1)))
+        return random.choice(type(self).ASCII_TIERS_BY_BRIGHTNESS[tier])
+
+    def convert_frame_to_ascii(
+            self,
+            frame: np.ndarray,
+            invert: bool = False) -> typing.Sequence[typing.Sequence[str]]:
+        """
+        Resize image and return list of characters corresponding
+        to brightness of each pixel
+        """
+        downsampled = frame[
+            ::self.downsample_factor_y,
+            ::self.downsample_factor_x]
+        return [
+            [
+                self.get_ascii_for_pixel(pixel, invert=invert)
+                for pixel in row]
+            for row in downsampled]
+
+    def print_frame(
+            self,
+            ascii_frame: typing.Sequence[typing.Sequence[str]]) -> None:
+        """
+        Print characters as lines
+        """
+        os.system('clear')
+        output = "\n".join([
+            "".join(row)
+            for row in ascii_frame])
+        print(output)
