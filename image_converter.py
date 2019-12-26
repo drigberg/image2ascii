@@ -1,4 +1,3 @@
-import argparse
 import dataclasses
 import random
 import typing
@@ -17,7 +16,7 @@ class Pixel:
         return (self.r / 256 + self.g / 256 + self.b / 256) / 3
 
 
-class Converter:
+class ImageConverter:
     ASCII_TIERS_BY_BRIGHTNESS = [
         ['.', '`', ','],
         [':', '^'],
@@ -117,32 +116,3 @@ class Converter:
                 row.append(str(chars[pos]))
             print("".join(row))
 
-
-def parse_args():
-    parser = argparse.ArgumentParser(description='Convert image to ascii.')
-    parser.add_argument(
-        'image_path',
-        type=str,
-        help='path to image file')
-    parser.add_argument(
-        'downsample_factor',
-        type=int,
-        help='factor by which to scale down the image')
-    parser.add_argument(
-        '--invert',
-        '-i',
-        action='store_const',
-        const=True,
-        default=False)
-    args = parser.parse_args()
-    return args
-
-
-if __name__ == "__main__":
-    args = parse_args()
-    converter = Converter(args.image_path, args.downsample_factor)
-    chars = converter.convert_image_to_ascii(invert=args.invert)
-    converter.print(chars)
-    print(
-        f'Converted image of size {converter.image.size} '
-        f'by factor {args.downsample_factor}')
