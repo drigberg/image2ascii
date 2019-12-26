@@ -11,9 +11,9 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description='Play video in terminal as ascii frames.')
     parser.add_argument(
-        'url',
+        'source',
         type=str,
-        help='youtube url')
+        help='"webcam" or youtube url')
     parser.add_argument(
         'downsample_factor',
         type=int,
@@ -31,9 +31,12 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
 
-    vPafy = pafy.new(args.url)
-    play = vPafy.getbest()
-    video_capture = cv2.VideoCapture(play.url)
+    if args.source == "webcam":
+        video_capture = cv2.VideoCapture(0)
+    else:
+        vPafy = pafy.new(args.url)
+        play = vPafy.getbest()
+        video_capture = cv2.VideoCapture(play.url)
     frame_converter = FrameConverter(
         downsample_factor=args.downsample_factor)
     while (True):
