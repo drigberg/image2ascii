@@ -13,7 +13,7 @@ class Pixel:
     b: int
 
     @property
-    def brightness(self):
+    def brightness(self) -> float:
         return (self.r / 256 + self.g / 256 + self.b / 256) / 3
 
 
@@ -106,7 +106,7 @@ class Converter:
             self.get_ascii_for_pixel(pixel, invert=invert)
             for pixel in downsampled]
 
-    def print(self, chars: typing.Sequence[str]):
+    def print(self, chars: typing.Sequence[str]) -> None:
         """
         Print characters as lines
         """
