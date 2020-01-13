@@ -3,8 +3,12 @@ import random
 import typing
 
 import numpy as np
-import webcolors
+from scipy.spatial import KDTree
 
+
+DELTA = 0.001
+BLACK_WHITE_THRESHOLD = 40
+SATURATION_THRESHOLD = 10
 
 COLOR_TO_INT_MAPPING = {
     "BLACK": 0,
@@ -17,16 +21,15 @@ COLOR_TO_INT_MAPPING = {
     "GRAY": 7
 }
 
-
-COLOR_TO_HEX_MAPPING = {
-    "BLACK": "#000000",
-    "RED": "#ff0000",
-    "GREEN": "#008000",
-    "YELLOW": "#ffff00",
-    "BLUE": "#0000ff",
-    "PINK": "#ff00ff",
-    "CYAN": "#00ffff",
-    "GRAY": "#ffffff",
+COLOR_TO_RGB_MAPPING = {
+    "BLACK": (0, 0, 0),
+    "RED": (255, 0, 0),
+    "GREEN": (0, 255, 0),
+    "YELLOW": (255, 255, 0),
+    "BLUE": (0, 0, 255),
+    "PINK": (255, 0, 255),
+    "CYAN": (0, 255, 255),
+    "GRAY": (255, 255, 255),
 }
 
 FOREGROUND_OFFSET = 30
@@ -47,6 +50,12 @@ class FrameConverter:
             downsample_factor: int):
         self.downsample_factor_y = downsample_factor
         self.downsample_factor_x = round(downsample_factor / 2)
+        self.color_names_list = []
+        self.rgb_list = []
+        for color_name, rgb in COLOR_TO_RGB_MAPPING.items():
+            self.color_names_list.append(color_name)
+            self.rgb_list.append(rgb)
+        self.color_spacedb = KDTree(self.rgb_list)
 
     def get_ascii_for_pixel(
             self,
@@ -65,19 +74,20 @@ class FrameConverter:
     def get_color_for_pixel(
             self,
             pixel: typing.Tuple[int, int, int]) -> str:
-        """
-        Adapted from https://stackoverflow.com/questions/9694165/
-                     convert-rgb-color-to-english-color-name-like-green-with-python
-        """
-        min_colors = {}
-        for name, hex_code in COLOR_TO_HEX_MAPPING.items():
-            r_c, g_c, b_c = webcolors.hex_to_rgb(hex_code)
-            rd = (r_c - pixel[0]) ** 2
-            gd = (g_c - pixel[1]) ** 2
-            bd = (b_c - pixel[2]) ** 2
-            min_colors[(rd + gd + bd)] = name
-        color = min_colors[min(min_colors.keys())]
-        return color
+        if max(pixel) < BLACK_WHITE_THRESHOLD:
+            return "BLACK"
+        if min(pixel) > 255 - BLACK_WHITE_THRESHOLD:
+            return "GRAY"
+        if max(pixel) - min(pixel) < SATURATION_THRESHOLD:
+            return "GRAY"
+
+        # scale pixel to 0-255 range before evaluating
+        translated_pixel = [v - min(pixel) for v in pixel]
+        scale_ratio = 255 / (max(translated_pixel) + DELTA)
+        scaled_pixel = [v * scale_ratio for v in translated_pixel]
+        _, index = self.color_spacedb.query(scaled_pixel)
+
+        return self.color_names_list[index]
 
     def get_string_for_pixel(
             self,

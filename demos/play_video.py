@@ -6,6 +6,10 @@ from video_converter import FrameConverter
 import cv2
 import pafy
 
+"""
+TODO: use target resolution instead of downsample factor?
+"""
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -41,6 +45,7 @@ if __name__ == "__main__":
         downsample_factor=args.downsample_factor)
     while (True):
         ret, frame = video_capture.read()
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         ascii_frame = frame_converter.convert_frame_to_ascii(
-            frame, invert_brightness=args.invert_brightness)
+            rgb_frame, invert_brightness=args.invert_brightness)
         frame_converter.print_frame(ascii_frame)
