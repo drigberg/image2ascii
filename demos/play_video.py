@@ -19,7 +19,7 @@ def parse_args():
         type=int,
         help='factor by which to scale down the frames')
     parser.add_argument(
-        '--invert',
+        '--invert_brightness',
         '-i',
         action='store_const',
         const=True,
@@ -34,7 +34,7 @@ if __name__ == "__main__":
     if args.source == "webcam":
         video_capture = cv2.VideoCapture(0)
     else:
-        vPafy = pafy.new(args.url)
+        vPafy = pafy.new(args.source)
         play = vPafy.getbest()
         video_capture = cv2.VideoCapture(play.url)
     frame_converter = FrameConverter(
@@ -42,5 +42,5 @@ if __name__ == "__main__":
     while (True):
         ret, frame = video_capture.read()
         ascii_frame = frame_converter.convert_frame_to_ascii(
-            frame, invert=args.invert)
+            frame, invert_brightness=args.invert_brightness)
         frame_converter.print_frame(ascii_frame)

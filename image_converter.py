@@ -115,4 +115,3 @@ class ImageConverter:
                 pos = y * self.target_width + x
                 row.append(str(chars[pos]))
             print("".join(row))
-
