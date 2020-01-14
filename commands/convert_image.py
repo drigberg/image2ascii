@@ -1,7 +1,10 @@
 import argparse
 
+from PIL import Image
+
 import set_root_path  # noqa
-from image2ascii.image_converter import ImageConverter
+from image2ascii.frame_converter import FrameConverter
+from image2ascii.images import get_frame_from_image
 
 
 def parse_args():
@@ -26,9 +29,13 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    image_converter = ImageConverter(args.image_path, args.downsample_factor)
-    chars = image_converter.convert_image_to_ascii(invert=args.invert)
-    image_converter.print(chars)
+    image = Image.open(args.image_path)
+    frame_converter = FrameConverter(
+        downsample_factor=args.downsample_factor)
+    frame = get_frame_from_image(image)
+    ascii_frame = frame_converter.convert_frame_to_ascii(
+        frame, invert_brightness=args.invert)
+    frame_converter.print_frame(ascii_frame)
     print(
-        f'Converted image of size {image_converter.image.size} '
+        f'Converted image of size {image.size} '
         f'by factor {args.downsample_factor}')

@@ -9,8 +9,11 @@ import cv2
 import pafy
 
 """
-TODO: use target resolution instead of downsample factor?
+TODO: use target resolution instead of downsample factor
+TODO: add option for flipping webcam frames horizontally
+TODO: clear terminal using ANSI codes for rewriting existing lines
 """
+
 DELTA = 0.000001
 
 
@@ -58,14 +61,18 @@ if __name__ == "__main__":
         this_frame_time = time.time()
         duration = this_frame_time - last_frame_time
         actual_framerate = round(1 / (duration + DELTA))
-        if target_frame_duration and duration > target_frame_duration:
-            to_skip = math.ceil(duration / target_frame_duration)
-            for i in range(to_skip):
-                video_capture.read()
-        elif target_frame_duration and duration < target_frame_duration:
-            actual_framerate = target_frame_duration
-            time.sleep(target_frame_duration - duration)
-
+        if args.source != "webcam":
+            """
+            For youtube, we try to show video at original speed
+            """
+            if duration > target_frame_duration:
+                to_skip = math.ceil(duration / target_frame_duration)
+                for i in range(to_skip):
+                    video_capture.read()
+            elif duration < target_frame_duration:
+                actual_framerate = round(1 / target_frame_duration)
+                sleeptime = target_frame_duration - duration
+                time.sleep(sleeptime)
         has_frame, frame = video_capture.read()
         if not has_frame:
             break
