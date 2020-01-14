@@ -47,6 +47,20 @@ def parse_args():
     return args
 
 
+def get_video_capture(source: str) -> cv2.VideoCapture:
+    target_frame_duration: float
+    target_framerate: int
+
+    # get source stream
+    if source == "webcam":
+        video_capture = cv2.VideoCapture(0)
+    else:
+        vPafy = pafy.new(source)
+        play = vPafy.getbest()
+        video_capture = cv2.VideoCapture(play.url)
+    return video_capture
+
+
 def get_frame_index_for_time_elapsed(
         target_framerate: int, time_elapsed: float):
     """
@@ -56,27 +70,15 @@ def get_frame_index_for_time_elapsed(
     return math.floor(time_elapsed * target_framerate)
 
 
-if __name__ == "__main__":
-    args = parse_args()
-    target_frame_duration: float
-    target_framerate: int
-
-    # get source stream
-    if args.source == "webcam":
-        video_capture = cv2.VideoCapture(0)
-        target_framerate = round(video_capture.get(cv2.CAP_PROP_FPS))
-        target_frame_duration = 1 / target_framerate
-    else:
-        vPafy = pafy.new(args.source)
-        play = vPafy.getbest()
-        video_capture = cv2.VideoCapture(play.url)
-        target_framerate = round(video_capture.get(cv2.CAP_PROP_FPS))
-        target_frame_duration = 1 / target_framerate
-
+def play_video(
+        video_capture: cv2.VideoCapture,
+        downsample_factor: int) -> None:
     frame_converter = FrameConverter(
-        downsample_factor=args.downsample_factor)
+        downsample_factor=downsample_factor)
 
     # init timing variables
+    target_framerate = round(video_capture.get(cv2.CAP_PROP_FPS))
+    target_frame_duration = 1 / target_framerate
     last_frame_time: typing.Optional[float] = None
     this_frame_time: typing.Optional[float] = None
     current_frame_index = 0
@@ -123,4 +125,10 @@ if __name__ == "__main__":
             if duration is not None
             else target_framerate)
         print(f"Framerate: {actual_framerate}fps")
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    video_capture = get_video_capture(args.source)
+    play_video(video_capture, args.downsample_factor)
     print("Video complete!")
