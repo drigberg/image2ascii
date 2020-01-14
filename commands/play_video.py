@@ -1,6 +1,6 @@
 import argparse
-import math
 import time
+import typing
 
 import set_root_path  # noqa
 from image2ascii.frame_converter import FrameConverter
@@ -40,33 +40,43 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
+    target_frame_duration: float
+    target_framerate: int
 
+    # get source stream
     if args.source == "webcam":
         video_capture = cv2.VideoCapture(0)
-        framerate = round(video_capture.get(cv2.CAP_PROP_FPS))
-        target_frame_duration = 1 / framerate
+        target_framerate = round(video_capture.get(cv2.CAP_PROP_FPS))
+        target_frame_duration = 1 / target_framerate
     else:
         vPafy = pafy.new(args.source)
         play = vPafy.getbest()
         video_capture = cv2.VideoCapture(play.url)
-        framerate = round(video_capture.get(cv2.CAP_PROP_FPS))
-        target_frame_duration = 1 / framerate
-        print(f"Source frame rate: {framerate}fps")
+        target_framerate = round(video_capture.get(cv2.CAP_PROP_FPS))
+        target_frame_duration = 1 / target_framerate
+
     frame_converter = FrameConverter(
         downsample_factor=args.downsample_factor)
-    last_frame_time = None
-    this_frame_time = time.time()
+    last_frame_time: typing.Optional[float] = None
+    this_frame_time: typing.Optional[float] = None
+
+    # read from stream
     while (True):
         last_frame_time = this_frame_time
         this_frame_time = time.time()
-        duration = this_frame_time - last_frame_time
-        actual_framerate = round(1 / (duration + DELTA))
-        if args.source != "webcam":
+        duration = (
+            this_frame_time - last_frame_time
+            if last_frame_time is not None else None)
+        actual_framerate = (
+            round(1 / (duration + DELTA))
+            if duration is not None
+            else target_framerate)
+        if args.source != "webcam" and duration is not None:
             """
             For youtube, we try to show video at original speed
             """
             if duration > target_frame_duration:
-                to_skip = math.ceil(duration / target_frame_duration)
+                to_skip = round(duration / target_frame_duration)
                 for i in range(to_skip):
                     video_capture.read()
             elif duration < target_frame_duration:

@@ -5,6 +5,9 @@ import numpy as np
 
 
 def get_frame_from_image(image: Image, down) -> np.ndarray:
+    """
+    Get numpy array of rows from flat Pillow list of pixels
+    """
     image_width = image.size[0]
     image_height = image.size[1]
     image_data = list(image.getdata())

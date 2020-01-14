@@ -20,6 +20,7 @@ class FrameConverter:
             self,
             downsample_factor: int):
         self.downsample_factor_y = downsample_factor
+        # terminal characters are half as wide as they are tall
         self.downsample_factor_x = round(downsample_factor / 2)
 
     def get_ascii_for_pixel(
