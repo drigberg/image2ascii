@@ -1,4 +1,5 @@
 import argparse
+import curses
 import math
 import time
 import typing
@@ -82,9 +83,11 @@ def get_frame_index_for_time_elapsed(
 
 def play_video(
         video_capture: cv2.VideoCapture,
+        window,
         downsample_factor: int) -> None:
     frame_converter = FrameConverter(
-        downsample_factor=downsample_factor)
+        downsample_factor=downsample_factor,
+        window=window)
 
     # init timing variables
     target_framerate = round(video_capture.get(cv2.CAP_PROP_FPS))
@@ -137,7 +140,12 @@ def play_video(
             round(1 / (duration + DELTA))
             if duration is not None
             else target_framerate)
-        print(f"Framerate: {actual_framerate}fps")
+        window.addstr(f"\nFramerate: {actual_framerate}fps")
+        window.addstr("\n<Press any key to exit>")
+        window.refresh()
+        char = window.getch()
+        if char != -1:
+            break
 
 
 if __name__ == "__main__":
@@ -147,5 +155,22 @@ if __name__ == "__main__":
     original_width = frame.shape[1]
     output_width = OUTPUT_WIDTHS_BY_LABEL[args.size]
     downsample_factor = math.ceil(original_width / output_width)
-    play_video(video_capture, downsample_factor)
-    print("Video complete!")
+    output_height = int(frame.shape[0] / downsample_factor)
+
+    # setup window with hidden cursor
+    w = curses.initscr()
+    w.nodelay(1)
+    curses.curs_set(0)
+
+    error = None
+    try:
+        play_video(video_capture, w, downsample_factor)
+    except Exception as e:
+        error = e
+    w.erase()
+    w.refresh()
+    curses.endwin()
+    if error is not None:
+        print(
+            "Encountered error: most likely, the window is too small "
+            "for the output size selected.")

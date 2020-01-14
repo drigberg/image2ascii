@@ -18,10 +18,12 @@ class FrameConverter:
 
     def __init__(
             self,
-            downsample_factor: int):
+            downsample_factor: int,
+            window):
         self.downsample_factor_x = downsample_factor
         # terminal characters are twice as tall as they are wide
         self.downsample_factor_y = downsample_factor * 2
+        self.window = window
 
     def get_ascii_for_pixel(
             self,
@@ -65,5 +67,6 @@ class FrameConverter:
         output = "\n".join([
             "".join(row)
             for row in ascii_frame])
-        to_print = BLANK_SCREEN + output
-        print(to_print)
+        self.window.erase()
+        self.window.addstr(output)
+        self.window.refresh()
