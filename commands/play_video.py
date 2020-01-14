@@ -11,11 +11,20 @@ import numpy as np
 import pafy
 
 """
-TODO: use target resolution instead of downsample factor
 TODO: clear terminal using ANSI codes for rewriting existing lines
 """
 
 DELTA = 0.000001
+
+
+OUTPUT_WIDTHS_BY_LABEL = {
+    "XS": 36,
+    "S": 78,
+    "M": 120,
+    "L": 162,
+    "XL": 204,
+    "XXL": 246,
+    "XXXL": 288}
 
 
 def parse_args():
@@ -26,9 +35,10 @@ def parse_args():
         type=str,
         help='"webcam" or youtube url')
     parser.add_argument(
-        'downsample_factor',
-        type=int,
-        help='factor by which to scale down the frames')
+        'size',
+        type=str,
+        choices=list(OUTPUT_WIDTHS_BY_LABEL.keys()),
+        help='output size')
     parser.add_argument(
         '--invert-brightness',
         '-i',
@@ -81,7 +91,10 @@ def play_video(
     target_frame_duration = 1 / target_framerate
     last_frame_time: typing.Optional[float] = None
     this_frame_time: typing.Optional[float] = None
-    current_frame_index = 0
+
+    # we start at frame 1 instead of 0 because we read the first
+    # frame to get the video dimensions
+    current_frame_index = 1
     video_start_time = time.time()
 
     # read from stream
@@ -130,5 +143,9 @@ def play_video(
 if __name__ == "__main__":
     args = parse_args()
     video_capture = get_video_capture(args.source)
-    play_video(video_capture, args.downsample_factor)
+    has_frame, frame = video_capture.read()
+    original_width = frame.shape[1]
+    output_width = OUTPUT_WIDTHS_BY_LABEL[args.size]
+    downsample_factor = math.ceil(original_width / output_width)
+    play_video(video_capture, downsample_factor)
     print("Video complete!")
