@@ -1,6 +1,6 @@
 import pytest
 
-from image2ascii.video_converter import FrameConverter
+from image2ascii.frame_converter import FrameConverter
 
 
 class TestFrameConverter:

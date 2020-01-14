@@ -3,7 +3,7 @@ import math
 import time
 
 import set_root_path  # noqa
-from image2ascii.video_converter import FrameConverter
+from image2ascii.frame_converter import FrameConverter
 
 import cv2
 import pafy
