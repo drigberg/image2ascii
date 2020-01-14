@@ -6,11 +6,11 @@ import set_root_path  # noqa
 from image2ascii.frame_converter import FrameConverter
 
 import cv2
+import numpy as np
 import pafy
 
 """
 TODO: use target resolution instead of downsample factor
-TODO: add option for flipping webcam frames horizontally
 TODO: clear terminal using ANSI codes for rewriting existing lines
 """
 
@@ -29,8 +29,16 @@ def parse_args():
         type=int,
         help='factor by which to scale down the frames')
     parser.add_argument(
-        '--invert_brightness',
+        '--invert-brightness',
         '-i',
+        dest='invert_brightness',
+        action='store_const',
+        const=True,
+        default=False)
+    parser.add_argument(
+        '--flip-horizontally',
+        '-f',
+        dest='flip_horizontally',
         action='store_const',
         const=True,
         default=False)
@@ -84,6 +92,8 @@ if __name__ == "__main__":
                 sleeptime = target_frame_duration - duration
                 time.sleep(sleeptime)
         has_frame, frame = video_capture.read()
+        if args.flip_horizontally:
+            frame = np.flip(frame, 1)
         if not has_frame:
             break
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
