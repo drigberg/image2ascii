@@ -1,7 +1,7 @@
 import argparse
 
 import set_root_path  # noqa
-from video_converter import FrameConverter
+from image2ascii.video_converter import FrameConverter
 
 import cv2
 import pafy

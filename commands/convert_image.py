@@ -1,7 +1,7 @@
 import argparse
 
 import set_root_path  # noqa
-from image_converter import ImageConverter
+from image2ascii.image_converter import ImageConverter
 
 
 def parse_args():
