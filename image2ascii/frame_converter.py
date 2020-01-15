@@ -19,7 +19,7 @@ class FrameConverter:
     def __init__(
             self,
             downsample_factor: int,
-            window):
+            window = None):
         self.downsample_factor_x = downsample_factor
         # terminal characters are twice as tall as they are wide
         self.downsample_factor_y = downsample_factor * 2
@@ -67,6 +67,9 @@ class FrameConverter:
         output = "\n".join([
             "".join(row)
             for row in ascii_frame])
-        self.window.erase()
-        self.window.addstr(output)
-        self.window.refresh()
+        if self.window:
+            self.window.erase()
+            self.window.addstr(output)
+            self.window.refresh()
+        else:
+            print(output)

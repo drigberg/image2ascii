@@ -4,7 +4,7 @@ from PIL import Image
 import numpy as np
 
 
-def get_frame_from_image(image: Image, down) -> np.ndarray:
+def get_frame_from_image(image: Image) -> np.ndarray:
     """
     Get numpy array of rows from flat Pillow list of pixels
     """
