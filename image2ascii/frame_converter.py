@@ -19,7 +19,7 @@ class FrameConverter:
     def __init__(
             self,
             downsample_factor: int,
-            window = None):
+            window=None):
         self.downsample_factor_x = downsample_factor
         # terminal characters are twice as tall as they are wide
         self.downsample_factor_y = downsample_factor * 2
